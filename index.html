@@ -110,16 +110,48 @@
 #overlay.paused-overlay .logo{font-size:clamp(36px,6vw,66px)}
 #overlay.paused-overlay #start{background:linear-gradient(110deg,#59f0ce,#51d4ff)}
 
-/* Landscape-only mobile game. No rotated UI or rotate-phone prompt. */
+/* Landscape-only gameplay. Portrait gets a styled, accessible landing view instead of a blank screen. */
 #portraitBlock{display:none}
 @media (orientation:portrait) and (pointer:coarse){
-  #gameShell,#installPanel,#preferredBrowserGuide{visibility:hidden!important;pointer-events:none!important}
-  #portraitBlock{display:block!important;position:fixed;inset:0;z-index:2147483647;background:#050b17;touch-action:none}
+  #gameShell,#installPanel{visibility:hidden!important;pointer-events:none!important}
+  #preferredBrowserGuide{z-index:2147483647!important}
+  #portraitBlock{
+    display:flex!important;position:fixed;inset:0;z-index:2147483600;
+    overflow:hidden;align-items:center;justify-content:center;flex-direction:column;
+    background:radial-gradient(ellipse at 50% 40%,#103658 0%,#091b35 40%,#050b17 85%);
+    color:#f3fbff;touch-action:pan-y;text-align:center;
+    padding:calc(26px + env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom));
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  #portraitBlock::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(#43bfe411 1px,transparent 1px),linear-gradient(90deg,#43bfe411 1px,transparent 1px);
+    background-size:58px 58px;mask-image:linear-gradient(transparent,#000 25%,#000 65%,transparent)}
+  #portraitBlock .portraitInner{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:345px;width:100%}
+  #portraitBlock .portraitShip{width:min(53vw,220px);max-height:230px;filter:drop-shadow(0 0 30px #32cffe77)}
+  #portraitBlock .portraitTitle{font-weight:1000;letter-spacing:3px;line-height:1.05;font-size:clamp(32px,8vw,48px);text-shadow:0 0 24px #00bbff55}
+  #portraitBlock .portraitTitle em{font-style:normal;color:#65f3ff}
+  #portraitBlock .portraitCaption{font-size:14px;color:#b6cbe0;line-height:1.5}
+  #portraitBlock .portraitTag{padding:9px 15px;border:1px solid #55d8ff77;border-radius:999px;background:#1045608a;color:#a9f6ff;font-size:12px;letter-spacing:1.3px;font-weight:800}
 }
 </style>
 </head>
 <body>
-<div id="portraitBlock" aria-hidden="true"></div>
+<div id="portraitBlock" role="region" aria-label="NEON STRIKE landscape game landing screen">
+  <div class="portraitInner">
+    <svg class="portraitShip" viewBox="0 0 230 230" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="shipbody" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#336eab"/><stop offset="1" stop-color="#102747"/></linearGradient></defs>
+      <circle cx="115" cy="115" r="94" fill="none" stroke="#41dcff" stroke-opacity=".22" stroke-width="2"/>
+      <circle cx="115" cy="115" r="64" fill="none" stroke="#41dcff" stroke-opacity=".13" stroke-width="2"/>
+      <path d="M115 17 L141 97 L201 164 L162 160 L144 137 L115 163 L86 137 L68 160 L29 164 L89 97 Z" fill="url(#shipbody)" stroke="#70f3ff" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M115 39 L130 113 L115 137 L100 113 Z" fill="#b8fbff"/>
+      <path d="M100 158 L115 210 L130 158" fill="#ffb465" opacity=".85"/>
+      <circle cx="46" cy="65" r="5" fill="#ff527f"/><circle cx="184" cy="82" r="6" fill="#ff527f"/>
+    </svg>
+    <div class="portraitTitle">NEON <em>STRIKE</em></div>
+    <div class="portraitTag">LANDSCAPE GAME</div>
+    <div class="portraitCaption">Your game is ready. Landscape gameplay becomes available when your device is horizontal.</div>
+  </div>
+</div>
 <div id="gameShell">
 <canvas id="game"></canvas>
 <div id="ui">
