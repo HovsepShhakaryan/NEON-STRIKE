@@ -31,3 +31,17 @@ After uploading new game versions, change `CACHE_NAME` in `sw.js` (for example v
 ## Testing
 
 Open Chrome DevTools → Application → Manifest / Service workers. For iOS test through Safari on a real iPhone.
+
+## Landscape-only play
+The PWA requests landscape mode on installation (where supported). In mobile browsers that cannot lock orientation, a rotate-phone screen covers gameplay when held in portrait. Rotate your device sideways to play. On iOS you may need to disable the system rotation lock. Replace **all** existing PWA files in GitHub Pages and reload/relaunch the installed app to get the update.
+
+
+## Pause / Resume (new)
+- Tap the ⏸ button in the upper-right HUD. The game stops and the music pauses.
+- Tap **Resume Game** on the pause screen or the ▶ button to continue.
+- Desktop: press **P** or **Esc**.
+- Switching tabs, minimizing the app, or rotating to portrait automatically pauses. Return to landscape and tap Resume.
+- Re-upload all updated files to GitHub Pages; updated service worker cache version installs the new code.
+
+
+Update: Added a reactive neon background flash that changes color briefly whenever the player fires.

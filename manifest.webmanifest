@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "name": "NEON STRIKE \u2014 Arena Shooter",
+  "name": "NEON STRIKE — Arena Shooter",
   "short_name": "NEON STRIKE",
   "description": "Play NEON STRIKE, a neon arcade survival shooter with skins, sound and leaderboards.",
   "start_url": "./index.html",
@@ -8,7 +8,7 @@
   "display": "standalone",
   "background_color": "#050b17",
   "theme_color": "#050b17",
-  "orientation": "any",
+  "orientation": "landscape",
   "icons": [
     {
       "src": "./icons/icon-192.png",
