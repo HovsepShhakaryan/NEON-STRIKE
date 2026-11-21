@@ -54,14 +54,25 @@
 #installPanel .installOk{border:0;border-radius:12px;padding:12px 20px;background:#45dbef;color:#06213a;font-weight:900;cursor:pointer;width:100%;margin-top:10px}
 @media(max-height:450px){#installGame{font-size:11px;padding:8px 12px}#installPanel .installCard{max-height:95vh;overflow:auto}}
 
-/* Strict mobile landscape-only display. No sideways CSS rotation. */
-#gameShell{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden;transform:none}
-#landscapeOnlyScreen{display:none;position:fixed;inset:0;z-index:100000;background:radial-gradient(circle at 50% 35%,#143653,#040916 78%);color:white;align-items:center;justify-content:center;text-align:center;padding:24px;touch-action:none}
-#landscapeOnlyScreen .landscape-message{max-width:380px;display:flex;flex-direction:column;align-items:center;gap:14px}
-#landscapeOnlyScreen .landscape-icon{font-size:62px;filter:drop-shadow(0 0 18px #51edff)}
-#landscapeOnlyScreen h2{margin:0;font-size:clamp(23px,7vw,32px);color:#87f1ff;letter-spacing:2px}
-#landscapeOnlyScreen p{margin:0;color:#c0d6e6;line-height:1.55}
-@media (orientation:portrait) and (pointer:coarse){#landscapeOnlyScreen{display:flex}#gameShell{visibility:hidden;pointer-events:none}}
+/* Always show the GAME immediately. In portrait on iOS, rotate the game viewport
+   (not the physical device, which browsers cannot rotate). */
+#gameShell{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden;transform:none;transform-origin:top left}
+@media (orientation:portrait) and (pointer:coarse){
+ #gameShell{inset:auto;left:100vw;top:0;width:100dvh;height:100vw;transform:rotate(90deg)}
+ #gameShell #top{left:10px;right:10px;top:6px;gap:5px}
+ #gameShell #bottom{left:12px;right:12px;bottom:8px}
+ #gameShell #stick{width:min(24vw,104px);height:min(24vw,104px)}
+ #gameShell #knob{width:40%;height:40%}
+ #gameShell #fire{width:min(24vw,98px);height:min(24vw,98px)}
+ #gameShell #dash{width:min(17vw,70px);height:min(17vw,70px)}
+ #gameShell .accountCard{max-height:88vw}
+ #gameShell #leaderList{max-height:32vw}
+ #gameShell #overlay{gap:6px;padding:8px}
+ #gameShell .logo{font-size:clamp(28px,6vw,50px)}
+ #gameShell .subtitle{font-size:12px;line-height:1.35}
+ #gameShell .start{padding:9px 24px;margin-top:4px;font-size:12px}
+ #gameShell #hint{font-size:10px;margin-top:0}
+}
 /* Larger, clearly labeled pause/resume control; friendly to mobile landscape. */
 #pause{width:auto;min-width:94px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 11px;background:#173a5de8;border:1px solid #74e5ff9c;font-size:17px;font-weight:900;letter-spacing:.3px;white-space:nowrap}
 #pause .pause-label{font-size:11px}
@@ -275,16 +286,19 @@ function autoPause(){keys.clear();firing=false;pointer.down=false;if(active&&!pa
 addEventListener('blur',autoPause);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause()});
 const portraitMobile=matchMedia('(orientation:portrait) and (pointer:coarse)');
-function checkMobileOrientation(){if(portraitMobile.matches)autoPause();requestAnimationFrame(resize)}
+// Rotate the game surface itself in portrait, while keeping all pointer inputs mapped
+// to unrotated landscape game coordinates.
+function checkMobileOrientation(){requestAnimationFrame(()=>{resize();last=0})}
 portraitMobile.addEventListener?.('change',checkMobileOrientation);
 window.addEventListener('orientationchange',checkMobileOrientation);
+window.visualViewport?.addEventListener('resize',checkMobileOrientation);
 checkMobileOrientation();
-function visualIsRotated(){return false /* iOS-safe: page no longer rotates with CSS */}
-function gamePointer(e){const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
+function visualIsRotated(){return portraitMobile.matches}
+function gamePointer(e){const r=canvas.getBoundingClientRect();return visualIsRotated()?{x:e.clientY-r.top,y:r.right-e.clientX}:{x:e.clientX-r.left,y:e.clientY-r.top}}
 canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){const p=gamePointer(e);pointer.x=p.x;pointer.y=p.y;pointer.moved=true}});
 canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&!paused){const p=gamePointer(e);pointer.down=true;pointer.x=p.x;pointer.y=p.y;pointer.moved=true}});
 addEventListener('pointerup',()=>pointer.down=false);
-const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,dx=e.clientX-cx,dy=e.clientY-cy,d=Math.max(1,Math.hypot(dx,dy)),rad=b.width*.32,amt=Math.min(d,rad);stick.x=dx/d*amt/rad;stick.y=dy/d*amt/rad;kn.style.left=(50+stick.x*32)+'%';kn.style.top=(50+stick.y*32)+'%'}st.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;st.setPointerCapture(e.pointerId);moveStick(e)});st.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)moveStick(e)});function releaseStick(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.x=stick.y=0;kn.style.left=kn.style.top='50%'}st.addEventListener('pointerup',releaseStick);st.addEventListener('pointercancel',releaseStick);$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();$('#fire').setPointerCapture(e.pointerId);firing=true;shoot()});$('#fire').addEventListener('pointerup',()=>firing=false);$('#fire').addEventListener('pointercancel',()=>firing=false);$('#dash').addEventListener('pointerdown',e=>{e.preventDefault();dash()});$('#dash').addEventListener('click',e=>{if(e.detail===0){e.preventDefault();dash()}});
+const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,dx=visualIsRotated()?e.clientY-cy:e.clientX-cx,dy=visualIsRotated()?cx-e.clientX:e.clientY-cy,d=Math.max(1,Math.hypot(dx,dy)),rad=b.width*.32,amt=Math.min(d,rad);stick.x=dx/d*amt/rad;stick.y=dy/d*amt/rad;kn.style.left=(50+stick.x*32)+'%';kn.style.top=(50+stick.y*32)+'%'}st.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;st.setPointerCapture(e.pointerId);moveStick(e)});st.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)moveStick(e)});function releaseStick(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.x=stick.y=0;kn.style.left=kn.style.top='50%'}st.addEventListener('pointerup',releaseStick);st.addEventListener('pointercancel',releaseStick);$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();$('#fire').setPointerCapture(e.pointerId);firing=true;shoot()});$('#fire').addEventListener('pointerup',()=>firing=false);$('#fire').addEventListener('pointercancel',()=>firing=false);$('#dash').addEventListener('pointerdown',e=>{e.preventDefault();dash()});$('#dash').addEventListener('click',e=>{if(e.detail===0){e.preventDefault();dash()}});
 })();
 </script>
 
@@ -297,7 +311,6 @@ const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingC
 <button class="installOk" id="installOk" type="button">GOT IT</button>
 </div></div>
 </div><!-- /gameShell -->
-<div id="landscapeOnlyScreen" role="status" aria-live="polite" aria-label="Landscape mode required"><div class="landscape-message"><div class="landscape-icon">▱</div><h2>LANDSCAPE ONLY</h2><p>Turn your phone sideways to play NEON STRIKE.</p><p style="font-size:12px;opacity:.75">Portrait gameplay is disabled.</p></div></div>
 <script>
 /* PWA install UX and offline support. This script intentionally does not touch game state. */
 (()=>{

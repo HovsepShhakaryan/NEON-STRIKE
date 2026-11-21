@@ -1,64 +1,11 @@
-# NEON STRIKE — Installable Game (PWA)
+# NEON STRIKE — instant landscape layout
 
-## Upload to GitHub Pages
+Upload all files **inside this folder** to the root of your GitHub Pages repository: `index.html`, `sw.js`, `manifest.webmanifest`, and `icons/`.
 
-1. Unzip this package.
-2. In your public GitHub repository, upload **index.html**, **manifest.webmanifest**, **sw.js**, and the entire **icons** folder. Keep their names and paths. Do not upload the ZIP alone.
-3. In repository **Settings → Pages**, select **Deploy from a branch**, `main`, `/ (root)` and Save.
-4. Open `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/` in a browser. GitHub Pages gives HTTPS automatically.
-5. Android: Chrome → Install app (or `⋮` → Add to Home screen).
-6. iOS/iPadOS: Safari → Share → Add to Home Screen → Open as Web App (if offered) → Add.
-
-An **INSTALL APP** button has also been added to the game's start screen, which either triggers the supported install prompt or shows device-specific instructions.
-
-## Features
-
-- Standalone app icon and launch experience on iOS and Android.
-- Game shell cached to work offline after first successful online visit.
-- Fullscreen-feeling standalone browser window.
-- Touch controls retained.
-
-## Important: player accounts
-
-This package is based on the existing Supabase-equipped game. It **does not replace Supabase with Firebase**. If you want Firebase, the game's account code must still be migrated. Do not put service-account or admin secrets into index.html.
-
-Offline cloud operations cannot succeed without internet. Guest/local play works offline after installation.
-
-## Updates
-
-After uploading new game versions, change `CACHE_NAME` in `sw.js` (for example v2) so installed app instances refresh their cached assets. Players may need to relaunch while online.
-
-## Testing
-
-Open Chrome DevTools → Application → Manifest / Service workers. For iOS test through Safari on a real iPhone.
-
-## Landscape-only play
-The PWA requests landscape mode on installation (where supported). In mobile browsers that cannot lock orientation, a rotate-phone screen covers gameplay when held in portrait. Rotate your device sideways to play. On iOS you may need to disable the system rotation lock. Replace **all** existing PWA files in GitHub Pages and reload/relaunch the installed app to get the update.
-
-
-## Pause / Resume (new)
-- Tap the ⏸ button in the upper-right HUD. The game stops and the music pauses.
-- Tap **Resume Game** on the pause screen or the ▶ button to continue.
-- Desktop: press **P** or **Esc**.
-- Switching tabs, minimizing the app, or rotating to portrait automatically pauses. Return to landscape and tap Resume.
-- Re-upload all updated files to GitHub Pages; updated service worker cache version installs the new code.
-
-
-Update: Added a reactive neon background flash that changes color briefly whenever the player fires.
-
-
-Automatic landscape layout: no rotate prompt. On portrait mobile browsers, the entire game is visually rotated into a landscape layout and controls remain usable. Browsers cannot physically rotate the device or always lock iOS screen orientation.
-
-## DASH fix
-DASH is reusable every 2.8 seconds. The button now shows a countdown, changes to DASH when ready, and supports repeat taps.
-
-
-## iPhone layout fix
-- Portrait iPhone screens now display an upright, playable game. No sidewise CSS rotation or rotate prompt.
-- Physical landscape remains landscape and fills the screen. iOS Safari cannot be forced to rotate a physical screen through the web page.
-- Use Safari > Share > Add to Home Screen for the standalone app.
-- The service worker cache name is bumped to v9; after deploying, close and reopen the installed app (or refresh in Safari) to load the new code.
-
-
-## Landscape only
-Portrait gameplay is blocked on touch devices. Rotate the phone to landscape to play. iOS Safari/PWA cannot force physical orientation; users must rotate their devices. Android installed PWAs request landscape via manifest. When the device becomes portrait during play, the game automatically pauses.
+- No rotate-message overlay. Game launches right away.
+- On an upright phone, the HTML game surface is rotated 90 degrees into a landscape-style canvas with remapped pointer/touch controls.
+- On a physically rotated phone, the game uses native landscape sizing.
+- Where supported, installed Android web apps may lock device orientation via the Web App Manifest and Screen Orientation API.
+- **iPhone limitation:** Safari/PWA cannot force the iPhone OS into physical landscape. The game content can rotate, but the home screen, system UI and browser viewport remain controlled by iOS.
+- If installed already, close and reopen the app after deploying; if the previous version persists, remove it and add the page to the home screen again.
+- The current player-account screen is still Supabase-based and requires your Supabase configuration to enable cloud login.
