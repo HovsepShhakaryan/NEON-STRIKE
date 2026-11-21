@@ -109,9 +109,17 @@
 #overlay.paused-overlay{background:linear-gradient(155deg,#030915f5,#08243af5);z-index:12}
 #overlay.paused-overlay .logo{font-size:clamp(36px,6vw,66px)}
 #overlay.paused-overlay #start{background:linear-gradient(110deg,#59f0ce,#51d4ff)}
+
+/* Landscape-only mobile game. No rotated UI or rotate-phone prompt. */
+#portraitBlock{display:none}
+@media (orientation:portrait) and (pointer:coarse){
+  #gameShell,#installPanel,#preferredBrowserGuide{visibility:hidden!important;pointer-events:none!important}
+  #portraitBlock{display:block!important;position:fixed;inset:0;z-index:2147483647;background:#050b17;touch-action:none}
+}
 </style>
 </head>
 <body>
+<div id="portraitBlock" aria-hidden="true"></div>
 <div id="gameShell">
 <canvas id="game"></canvas>
 <div id="ui">
@@ -313,7 +321,7 @@ addEventListener('blur',autoPause);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause()});
 const portraitMobile=matchMedia('(orientation:portrait) and (pointer:coarse)');
 // Keep logical canvas and pointer coordinates in the same orientation on iOS.
-function checkMobileOrientation(){requestAnimationFrame(()=>{resize();last=0})}
+function checkMobileOrientation(){if(portraitMobile.matches && active && !paused)setPaused(true);requestAnimationFrame(()=>{resize();last=0})}
 portraitMobile.addEventListener?.('change',checkMobileOrientation);
 window.addEventListener('orientationchange',checkMobileOrientation);
 window.visualViewport?.addEventListener('resize',checkMobileOrientation);

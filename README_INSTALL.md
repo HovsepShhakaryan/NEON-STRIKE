@@ -10,3 +10,12 @@ Cloud accounts still require your Supabase configuration; this version doesn't m
 
 ## Browser recommendation
 Browsers and messaging apps decide where links open. A GitHub Pages site cannot guarantee Safari on iOS or Chrome on Android. This update shows a dismissible copy-link tip only when it detects a different browser; it never redirects without permission. Installed PWAs launch standalone.
+
+
+## Landscape only
+- Mobile gameplay and menus are accessible only when the screen is landscape.
+- Portrait displays a dark blank screen (no rotation prompt, no sideways game).
+- If you rotate to portrait during gameplay, the game pauses; rotate back to landscape and tap Resume.
+- The installed app requests landscape through its web manifest and a best-effort browser orientation lock.
+- iOS Safari/PWA does not provide a reliable way for web pages to physically force the device orientation. Rotate the device to use the game.
+- iOS/Android browser recommendation logic is preserved.
