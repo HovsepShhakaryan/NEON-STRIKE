@@ -54,17 +54,19 @@
 #installPanel .installOk{border:0;border-radius:12px;padding:12px 20px;background:#45dbef;color:#06213a;font-weight:900;cursor:pointer;width:100%;margin-top:10px}
 @media(max-height:450px){#installGame{font-size:11px;padding:8px 12px}#installPanel .installCard{max-height:95vh;overflow:auto}}
 
-/* Phone-first landscape-only experience. In portrait, block gameplay and prompt rotation.
-   On unsupported browsers orientation cannot be forcibly locked. */
-#rotateDevice{display:none;position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at 50% 35%,#142849,#050b17 75%);color:#f3fbff;align-items:center;justify-content:center;text-align:center;padding:calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));font-family:Inter,system-ui,sans-serif;touch-action:none}
-#rotateDevice .rotateCard{max-width:340px;display:flex;align-items:center;flex-direction:column;gap:15px}
-#rotateDevice .rotatePhone{font-size:64px;line-height:1.1;transform:rotate(-90deg);animation:rotateHint 2.8s ease-in-out infinite alternate;filter:drop-shadow(0 0 16px #4ddfff)}
-#rotateDevice h2{margin:0;font-size:clamp(22px,7vw,32px);letter-spacing:.09em;color:#78f3ff}
-#rotateDevice p{margin:0;color:#c6d7ec;font-size:15px;line-height:1.55}
-@keyframes rotateHint{from{transform:rotate(-20deg)}to{transform:rotate(-90deg)}}
-@media (orientation:portrait) and (pointer:coarse) and (max-width:1100px){#rotateDevice{display:flex!important}}
-@media (prefers-reduced-motion:reduce){#rotateDevice .rotatePhone{animation:none;transform:rotate(-90deg)}}
-
+/* Landscape game surface: native landscape when supported, visual landscape when portrait. */
+#gameShell{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;transform-origin:top left}
+@media (orientation:portrait) and (pointer:coarse) and (max-width:1100px){
+  #gameShell{inset:auto;left:100vw;top:0;width:100dvh;height:100dvw;transform:rotate(90deg)}
+  #gameShell #top{left:10px;right:10px;top:6px}
+  #gameShell #bottom{left:12px;right:12px;bottom:8px}
+  #gameShell #stick{width:min(22dvw,104px);height:min(22dvw,104px)}
+  #gameShell #knob{width:40%;height:40%}
+  #gameShell #fire{width:min(22dvw,98px);height:min(22dvw,98px)}
+  #gameShell #dash{width:min(16dvw,70px);height:min(16dvw,70px)}
+  #gameShell .accountCard{max-height:90dvw}
+  #gameShell #leaderList{max-height:35dvw}
+}
 /* Larger, clearly labeled pause/resume control; friendly to mobile landscape. */
 #pause{width:auto;min-width:94px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 11px;background:#173a5de8;border:1px solid #74e5ff9c;font-size:17px;font-weight:900;letter-spacing:.3px;white-space:nowrap}
 #pause .pause-label{font-size:11px}
@@ -78,11 +80,7 @@
 </style>
 </head>
 <body>
-<div id="rotateDevice" role="status" aria-live="polite" aria-label="Rotate device to landscape">
- <div class="rotateCard"><div class="rotatePhone" aria-hidden="true">📱</div>
- <h2>ROTATE YOUR PHONE</h2><p>NEON STRIKE plays in landscape mode only. Turn your phone sideways to continue.</p></div>
-</div>
-
+<div id="gameShell">
 <canvas id="game"></canvas>
 <div id="ui">
  <div id="top"><div><div id="brand">✦ NEON STRIKE</div><div id="cloudStatus">Guest · scores saved on this device only</div><div class="stat" style="margin-top:5px">SHIELDS</div><div class="health"><div id="hpbar"></div></div></div><div class="group"><div><div class="stat">SCORE</div><div class="value" id="score">00000</div></div><div><div class="stat">WAVE</div><div class="value" id="wave">01</div></div><button class="hudbtn" id="account" title="Player account and leaderboard">👤 <span class="accountLabel">PLAYER</span></button><button class="hudbtn" id="skin" disabled title="Unlock new skins at 1,000 and every 10,000 points" aria-label="Skin locked until 1,000 points">🔒 <span class="skin-label">SKIN</span></button><button class="hudbtn" id="sound" aria-label="Mute sound" title="Turn sound off">🔊 <span class="sound-label">SOUND ON</span></button><button class="hudbtn" id="pause" aria-label="Pause game" aria-pressed="false" title="Pause / Resume (P or Esc)">⏸ <span class="pause-label">PAUSE</span></button></div></div>
@@ -190,7 +188,7 @@ const NSCloud=(()=>{
 (()=>{'use strict';
 const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d',{alpha:false});const $=s=>document.querySelector(s);let W=0,H=0,DPR=1,last=0,elapsed=0,active=false,paused=false,gameOver=false,score=0,wave=1,kills=0,spawnClock=0,spawnLeft=0,between=0,shake=0,flash=0,bgPulse=0,bgHue=195,bgGlowX=0,bgGlowY=0;const keys=new Set(),bullets=[],enemies=[],particles=[],pickups=[],stars=[];let unlockedSkinTier=0, equippedSkinTier=0;
 try{unlockedSkinTier=Math.max(0,Number(localStorage.getItem('neon_strike_max_skin_tier'))||0);if(localStorage.getItem('neon_strike_skin_1000')==='yes')unlockedSkinTier=Math.max(1,unlockedSkinTier);equippedSkinTier=Math.min(unlockedSkinTier,Math.max(0,Number(localStorage.getItem('neon_strike_equipped_skin_tier'))||unlockedSkinTier))}catch(e){}let player={x:0,y:0,r:18,hp:100,angle:0,fire:0,dash:0,inv:0,vx:0,vy:0};let pointer={x:0,y:0,down:false,moved:false},stick={x:0,y:0,id:null},firing=false,mobile=matchMedia('(pointer:coarse)').matches;const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(!active){player.x=W/2;player.y=H/2}stars.length=0;for(let i=0;i<Math.min(180,W*H/5500);i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:rand(.4,1.8),a:rand(.12,.65)})}addEventListener('resize',resize);resize();
+function resize(){DPR=Math.min(devicePixelRatio||1,2);const shell=document.querySelector('#gameShell');W=shell.clientWidth;H=shell.clientHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(!active){player.x=W/2;player.y=H/2}stars.length=0;for(let i=0;i<Math.min(180,W*H/5500);i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:rand(.4,1.8),a:rand(.12,.65)})}addEventListener('resize',()=>requestAnimationFrame(resize));screen.orientation?.addEventListener?.('change',()=>requestAnimationFrame(resize));resize();
 function burst(x,y,color,n=14,speed=220){for(let i=0;i<n;i++){let t=rand(0,Math.PI*2),v=rand(speed*.15,speed);particles.push({x,y,vx:Math.cos(t)*v,vy:Math.sin(t)*v,life:rand(.2,.7),max:.7,color,r:rand(1.5,4.5)})}if(particles.length>450)particles.splice(0,particles.length-450)}
 function notice(txt){const n=$('#notice');n.textContent=txt;n.classList.add('show');clearTimeout(notice.timer);notice.timer=setTimeout(()=>n.classList.remove('show'),1300)}
 function skinThreshold(tier){return tier===0?0:tier===1?1000:(tier-1)*10000}
@@ -280,13 +278,12 @@ addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 function autoPause(){keys.clear();firing=false;pointer.down=false;if(active&&!paused)setPaused(true)}
 addEventListener('blur',autoPause);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause()});
-// When rotated to portrait, freeze the game rather than allowing enemies to keep moving.
-const portraitQuery=matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 1100px)');
-portraitQuery.addEventListener?.('change',()=>{if(portraitQuery.matches)autoPause()});
-canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){pointer.x=e.clientX;pointer.y=e.clientY;pointer.moved=true}});
-canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&!paused){pointer.down=true;pointer.x=e.clientX;pointer.y=e.clientY;pointer.moved=true}});
+function visualIsRotated(){return matchMedia('(orientation:portrait) and (pointer:coarse) and (max-width:1100px)').matches}
+function gamePointer(e){const r=canvas.getBoundingClientRect();return visualIsRotated()?{x:e.clientY-r.top,y:r.right-e.clientX}:{x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){const p=gamePointer(e);pointer.x=p.x;pointer.y=p.y;pointer.moved=true}});
+canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&!paused){const p=gamePointer(e);pointer.down=true;pointer.x=p.x;pointer.y=p.y;pointer.moved=true}});
 addEventListener('pointerup',()=>pointer.down=false);
-const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,dx=e.clientX-cx,dy=e.clientY-cy,d=Math.max(1,Math.hypot(dx,dy)),rad=b.width*.32,amt=Math.min(d,rad);stick.x=dx/d*amt/rad;stick.y=dy/d*amt/rad;kn.style.left=(50+stick.x*32)+'%';kn.style.top=(50+stick.y*32)+'%'}st.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;st.setPointerCapture(e.pointerId);moveStick(e)});st.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)moveStick(e)});function releaseStick(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.x=stick.y=0;kn.style.left=kn.style.top='50%'}st.addEventListener('pointerup',releaseStick);st.addEventListener('pointercancel',releaseStick);$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();$('#fire').setPointerCapture(e.pointerId);firing=true;shoot()});$('#fire').addEventListener('pointerup',()=>firing=false);$('#fire').addEventListener('pointercancel',()=>firing=false);$('#dash').addEventListener('pointerdown',e=>{e.preventDefault();dash()});
+const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,dx=visualIsRotated()?e.clientY-cy:e.clientX-cx,dy=visualIsRotated()?cx-e.clientX:e.clientY-cy,d=Math.max(1,Math.hypot(dx,dy)),rad=b.width*.32,amt=Math.min(d,rad);stick.x=dx/d*amt/rad;stick.y=dy/d*amt/rad;kn.style.left=(50+stick.x*32)+'%';kn.style.top=(50+stick.y*32)+'%'}st.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;st.setPointerCapture(e.pointerId);moveStick(e)});st.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)moveStick(e)});function releaseStick(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.x=stick.y=0;kn.style.left=kn.style.top='50%'}st.addEventListener('pointerup',releaseStick);st.addEventListener('pointercancel',releaseStick);$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();$('#fire').setPointerCapture(e.pointerId);firing=true;shoot()});$('#fire').addEventListener('pointerup',()=>firing=false);$('#fire').addEventListener('pointercancel',()=>firing=false);$('#dash').addEventListener('pointerdown',e=>{e.preventDefault();dash()});
 })();
 </script>
 
@@ -298,6 +295,7 @@ const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingC
 <ol id="installSteps"></ol>
 <button class="installOk" id="installOk" type="button">GOT IT</button>
 </div></div>
+</div><!-- /gameShell -->
 <script>
 /* PWA install UX and offline support. This script intentionally does not touch game state. */
 (()=>{
@@ -332,7 +330,7 @@ const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingC
 </script>
 <script>
 /* Best-effort landscape lock: supported mainly when fullscreen or installed.
-   iOS Safari may ignore orientation.lock; the rotate overlay still works. */
+   iOS Safari can ignore orientation.lock; CSS rotates the game surface instead. */
 (()=>{
  const isMobile=()=>matchMedia('(pointer: coarse)').matches;
  let tried=false;

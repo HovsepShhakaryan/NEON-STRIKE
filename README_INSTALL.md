@@ -45,3 +45,6 @@ The PWA requests landscape mode on installation (where supported). In mobile bro
 
 
 Update: Added a reactive neon background flash that changes color briefly whenever the player fires.
+
+
+Automatic landscape layout: no rotate prompt. On portrait mobile browsers, the entire game is visually rotated into a landscape layout and controls remain usable. Browsers cannot physically rotate the device or always lock iOS screen orientation.
