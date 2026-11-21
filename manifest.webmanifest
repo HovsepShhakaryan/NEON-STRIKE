@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "NEON STRIKE \u2014 Arena Shooter",
+  "short_name": "NEON STRIKE",
+  "description": "Play NEON STRIKE, a neon arcade survival shooter with skins, sound and leaderboards.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050b17",
+  "theme_color": "#050b17",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
