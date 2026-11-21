@@ -1,11 +1,9 @@
-# NEON STRIKE — instant landscape layout
+# NEON STRIKE — iPhone layout & controls fix
 
-Upload all files **inside this folder** to the root of your GitHub Pages repository: `index.html`, `sw.js`, `manifest.webmanifest`, and `icons/`.
+This edition removes the 90-degree portrait CSS rotation that made the iOS UI sideways and shifted the layout. The game now uses the screen orientation naturally (portrait while upright, landscape while sideways), with larger semi-transparent touch controls, safe-area padding, and corrected touch coordinates. iOS Safari/PWA cannot physically force landscape.
 
-- No rotate-message overlay. Game launches right away.
-- On an upright phone, the HTML game surface is rotated 90 degrees into a landscape-style canvas with remapped pointer/touch controls.
-- On a physically rotated phone, the game uses native landscape sizing.
-- Where supported, installed Android web apps may lock device orientation via the Web App Manifest and Screen Orientation API.
-- **iPhone limitation:** Safari/PWA cannot force the iPhone OS into physical landscape. The game content can rotate, but the home screen, system UI and browser viewport remain controlled by iOS.
-- If installed already, close and reopen the app after deploying; if the previous version persists, remove it and add the page to the home screen again.
-- The current player-account screen is still Supabase-based and requires your Supabase configuration to enable cloud login.
+Upload **all** files inside this folder to the root of your existing GitHub Pages repository (not the folder itself). Replace index.html, sw.js and manifest.webmanifest. Preserve icons/ paths.
+
+If an installed PWA still shows an older version, close it completely, open the game URL in Safari, refresh the page and reopen the installed app. If necessary, remove the old Home Screen shortcut and install it again.
+
+Cloud accounts still require your Supabase configuration; this version doesn't migrate the backend to Firebase.

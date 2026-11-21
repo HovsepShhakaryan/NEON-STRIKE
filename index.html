@@ -54,24 +54,50 @@
 #installPanel .installOk{border:0;border-radius:12px;padding:12px 20px;background:#45dbef;color:#06213a;font-weight:900;cursor:pointer;width:100%;margin-top:10px}
 @media(max-height:450px){#installGame{font-size:11px;padding:8px 12px}#installPanel .installCard{max-height:95vh;overflow:auto}}
 
-/* Always show the GAME immediately. In portrait on iOS, rotate the game viewport
-   (not the physical device, which browsers cannot rotate). */
-#gameShell{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden;transform:none;transform-origin:top left}
+/* iOS safe-area aware layout: do not rotate the entire UI in portrait. */
+#gameShell{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden;transform:none}
+#gameShell #ui{position:absolute;inset:0}
+#gameShell #top{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top))}
+#gameShell #bottom{left:max(18px,env(safe-area-inset-left));right:max(18px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));gap:12px}
+/* Larger translucent controls give a clear view of the arena behind them. */
+#gameShell #stick{width:clamp(112px,20vw,150px);height:clamp(112px,20vw,150px);background:rgba(67,191,240,.10);border-color:rgba(144,230,255,.55);backdrop-filter:blur(2px)}
+#gameShell #knob{width:43%;height:43%;background:radial-gradient(circle,rgba(132,227,255,.4),rgba(41,117,181,.15));border-color:rgba(163,241,255,.73)}
+#gameShell #fire{width:clamp(106px,19vw,140px);height:clamp(106px,19vw,140px);background:radial-gradient(circle at 35% 25%,rgba(255,131,163,.65),rgba(244,39,94,.39) 72%,rgba(124,25,60,.35));border-color:rgba(255,208,223,.76);backdrop-filter:blur(3px)}
+#gameShell #dash{width:clamp(80px,14vw,102px);height:clamp(80px,14vw,102px);background:radial-gradient(circle at 35% 25%,rgba(116,231,255,.61),rgba(21,124,213,.38) 78%);border-color:rgba(185,240,255,.75);backdrop-filter:blur(3px)}
+#gameShell #action{gap:12px}
+#gameShell #fire,#gameShell #dash{opacity:.82;-webkit-tap-highlight-color:transparent}
+#gameShell #fire:active,#gameShell #dash:active{opacity:1}
 @media (orientation:portrait) and (pointer:coarse){
- #gameShell{inset:auto;left:100vw;top:0;width:100dvh;height:100vw;transform:rotate(90deg)}
- #gameShell #top{left:10px;right:10px;top:6px;gap:5px}
- #gameShell #bottom{left:12px;right:12px;bottom:8px}
- #gameShell #stick{width:min(24vw,104px);height:min(24vw,104px)}
- #gameShell #knob{width:40%;height:40%}
- #gameShell #fire{width:min(24vw,98px);height:min(24vw,98px)}
- #gameShell #dash{width:min(17vw,70px);height:min(17vw,70px)}
- #gameShell .accountCard{max-height:88vw}
- #gameShell #leaderList{max-height:32vw}
- #gameShell #overlay{gap:6px;padding:8px}
- #gameShell .logo{font-size:clamp(28px,6vw,50px)}
- #gameShell .subtitle{font-size:12px;line-height:1.35}
- #gameShell .start{padding:9px 24px;margin-top:4px;font-size:12px}
- #gameShell #hint{font-size:10px;margin-top:0}
+ #gameShell #top{display:flex;flex-direction:column;align-items:stretch;gap:6px;top:max(14px,env(safe-area-inset-top))}
+ #gameShell #top>div:first-child{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+ #gameShell #brand{font-size:11px;letter-spacing:1px}
+ #gameShell #cloudStatus{display:none}
+ #gameShell #top .health{width:75px;max-width:none;margin:0;height:6px}
+ #gameShell #top .stat[style]{display:none}
+ #gameShell #top .group{display:flex;align-items:center;gap:7px;justify-content:space-between;flex-wrap:nowrap;width:100%}
+ #gameShell #top .group>div{min-width:36px}
+ #gameShell #top .value{font-size:17px}
+ #gameShell #top .stat{font-size:9px}
+ #gameShell .hudbtn{height:36px;min-width:36px;width:36px;font-size:17px;padding:0;border-radius:10px}
+ #gameShell #pause{min-width:36px;width:36px;height:36px;font-size:18px}
+ #gameShell #account,#gameShell #skin,#gameShell #sound{min-width:36px;width:36px;font-size:17px}
+ #gameShell #bottom{left:max(13px,env(safe-area-inset-left));right:max(13px,env(safe-area-inset-right));bottom:max(26px,env(safe-area-inset-bottom))}
+ #gameShell #stick{width:clamp(112px,30vw,148px);height:clamp(112px,30vw,148px)}
+ #gameShell #fire{width:clamp(108px,29vw,140px);height:clamp(108px,29vw,140px);font-size:16px}
+ #gameShell #dash{width:clamp(78px,21vw,100px);height:clamp(78px,21vw,100px);font-size:12px}
+ #gameShell #action{gap:9px}
+ #gameShell #overlay{padding:20px;gap:8px}
+ #gameShell .logo{font-size:clamp(35px,9vw,57px)}
+ #gameShell .subtitle{font-size:13px;line-height:1.4}
+ #gameShell .start{margin-top:8px;padding:13px 25px}
+ #gameShell .hint{font-size:11px}
+}
+@media (orientation:landscape) and (pointer:coarse) and (max-height:500px){
+ #gameShell #top{top:max(4px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right))}
+ #gameShell #bottom{bottom:max(6px,env(safe-area-inset-bottom));left:max(18px,env(safe-area-inset-left));right:max(18px,env(safe-area-inset-right))}
+ #gameShell #stick{width:clamp(100px,23vh,132px);height:clamp(100px,23vh,132px)}
+ #gameShell #fire{width:clamp(98px,23vh,132px);height:clamp(98px,23vh,132px)}
+ #gameShell #dash{width:clamp(73px,17vh,94px);height:clamp(73px,17vh,94px)}
 }
 /* Larger, clearly labeled pause/resume control; friendly to mobile landscape. */
 #pause{width:auto;min-width:94px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 11px;background:#173a5de8;border:1px solid #74e5ff9c;font-size:17px;font-weight:900;letter-spacing:.3px;white-space:nowrap}
@@ -286,19 +312,18 @@ function autoPause(){keys.clear();firing=false;pointer.down=false;if(active&&!pa
 addEventListener('blur',autoPause);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause()});
 const portraitMobile=matchMedia('(orientation:portrait) and (pointer:coarse)');
-// Rotate the game surface itself in portrait, while keeping all pointer inputs mapped
-// to unrotated landscape game coordinates.
+// Keep logical canvas and pointer coordinates in the same orientation on iOS.
 function checkMobileOrientation(){requestAnimationFrame(()=>{resize();last=0})}
 portraitMobile.addEventListener?.('change',checkMobileOrientation);
 window.addEventListener('orientationchange',checkMobileOrientation);
 window.visualViewport?.addEventListener('resize',checkMobileOrientation);
 checkMobileOrientation();
-function visualIsRotated(){return portraitMobile.matches}
-function gamePointer(e){const r=canvas.getBoundingClientRect();return visualIsRotated()?{x:e.clientY-r.top,y:r.right-e.clientX}:{x:e.clientX-r.left,y:e.clientY-r.top}}
+function visualIsRotated(){return false}
+function gamePointer(e){const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
 canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){const p=gamePointer(e);pointer.x=p.x;pointer.y=p.y;pointer.moved=true}});
 canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&!paused){const p=gamePointer(e);pointer.down=true;pointer.x=p.x;pointer.y=p.y;pointer.moved=true}});
 addEventListener('pointerup',()=>pointer.down=false);
-const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,dx=visualIsRotated()?e.clientY-cy:e.clientX-cx,dy=visualIsRotated()?cx-e.clientX:e.clientY-cy,d=Math.max(1,Math.hypot(dx,dy)),rad=b.width*.32,amt=Math.min(d,rad);stick.x=dx/d*amt/rad;stick.y=dy/d*amt/rad;kn.style.left=(50+stick.x*32)+'%';kn.style.top=(50+stick.y*32)+'%'}st.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;st.setPointerCapture(e.pointerId);moveStick(e)});st.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)moveStick(e)});function releaseStick(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.x=stick.y=0;kn.style.left=kn.style.top='50%'}st.addEventListener('pointerup',releaseStick);st.addEventListener('pointercancel',releaseStick);$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();$('#fire').setPointerCapture(e.pointerId);firing=true;shoot()});$('#fire').addEventListener('pointerup',()=>firing=false);$('#fire').addEventListener('pointercancel',()=>firing=false);$('#dash').addEventListener('pointerdown',e=>{e.preventDefault();dash()});$('#dash').addEventListener('click',e=>{if(e.detail===0){e.preventDefault();dash()}});
+const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,dx=e.clientX-cx,dy=e.clientY-cy,d=Math.max(1,Math.hypot(dx,dy)),rad=b.width*.32,amt=Math.min(d,rad);stick.x=dx/d*amt/rad;stick.y=dy/d*amt/rad;kn.style.left=(50+stick.x*32)+'%';kn.style.top=(50+stick.y*32)+'%'}st.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;st.setPointerCapture(e.pointerId);moveStick(e)});st.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)moveStick(e)});function releaseStick(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.x=stick.y=0;kn.style.left=kn.style.top='50%'}st.addEventListener('pointerup',releaseStick);st.addEventListener('pointercancel',releaseStick);$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();$('#fire').setPointerCapture(e.pointerId);firing=true;shoot()});$('#fire').addEventListener('pointerup',()=>firing=false);$('#fire').addEventListener('pointercancel',()=>firing=false);$('#dash').addEventListener('pointerdown',e=>{e.preventDefault();dash()});$('#dash').addEventListener('click',e=>{if(e.detail===0){e.preventDefault();dash()}});
 })();
 </script>
 
