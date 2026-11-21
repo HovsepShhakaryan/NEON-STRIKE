@@ -381,4 +381,46 @@ const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingC
  document.addEventListener('pointerdown',requestLandscape,{once:true,passive:true});
 })();
 </script>
+
+<style>
+/* Browser handoff advice is optional; it must not rotate or resize the game. */
+#preferredBrowserGuide{position:fixed;z-index:100002;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:none;align-items:center;gap:11px;padding:13px 14px;border:1px solid #67dbff9c;border-radius:16px;background:#0c1d35f2;color:#effdff;box-shadow:0 12px 45px #000c;font:13px/1.45 system-ui,-apple-system,sans-serif;touch-action:pan-y;user-select:text;max-width:620px;margin:auto}
+#preferredBrowserGuide.visible{display:flex}
+#preferredBrowserGuide .guideText{flex:1;min-width:0}
+#preferredBrowserGuide strong{display:block;color:#78eaff;margin-bottom:3px;font-size:14px}
+#preferredBrowserGuide .guideActions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+#preferredBrowserGuide button{border:1px solid #79ecff80;background:#174b68;color:white;border-radius:10px;padding:8px 10px;font:700 12px system-ui;cursor:pointer}
+#preferredBrowserGuide .guideDismiss{background:transparent;border-color:#ffffff40}
+@media(max-width:450px){#preferredBrowserGuide{font-size:12px;padding:10px}#preferredBrowserGuide button{font-size:11px;padding:7px}}
+</style>
+<div id="preferredBrowserGuide" role="status" aria-live="polite">
+  <div class="guideText"><strong id="preferredBrowserTitle">Open in your browser</strong><span id="preferredBrowserText"></span></div>
+  <div class="guideActions"><button type="button" id="copyGameLink">COPY LINK</button><button type="button" class="guideDismiss" id="dismissBrowserGuide">DISMISS</button></div>
+</div>
+<script>
+/* A link cannot force which browser another app launches. Only offer help when needed. */
+(()=>{
+ const ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1), android=/Android/i.test(ua);
+ const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ const namedInApp=/FBAN|FBAV|Instagram|Line\/|TikTok|Snapchat|Twitter|MicroMessenger|Pinterest|GSA\/|LinkedInApp/i.test(ua);
+ const safari=/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|YaBrowser/i.test(ua)&&!namedInApp;
+ const chrome=/Chrome\//i.test(ua)&&!/EdgA|OPR\/|SamsungBrowser|UCBrowser|DuckDuckGo/i.test(ua)&&!namedInApp;
+ if(standalone||!(ios||android)||((ios&&safari)||(android&&chrome)))return;
+ const panel=document.getElementById('preferredBrowserGuide');
+ document.getElementById('preferredBrowserTitle').textContent=ios?'Open in Safari for iPhone':'Open in Chrome for Android';
+ document.getElementById('preferredBrowserText').textContent=ios?'Use the current app’s Share menu → Open in Safari (if available), or copy this link and paste it into Safari.':'Use the current app’s menu → Open in Chrome (if available), or copy this link and paste it into Chrome.';
+ const key='ns_preferred_browser_dismissed';
+ try{if(sessionStorage.getItem(key)==='yes')return;}catch(_e){}
+ panel.classList.add('visible');
+ document.getElementById('dismissBrowserGuide').addEventListener('click',()=>{panel.classList.remove('visible');try{sessionStorage.setItem(key,'yes')}catch(_e){}});
+ document.getElementById('copyGameLink').addEventListener('click',async()=>{
+   const url=location.href;
+   try{await navigator.clipboard.writeText(url);document.getElementById('copyGameLink').textContent='COPIED!'}catch(_e){
+     const input=document.createElement('input');input.value=url;input.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(input);input.select();
+     try{document.execCommand('copy');document.getElementById('copyGameLink').textContent='COPIED!'}catch(_err){document.getElementById('copyGameLink').textContent='COPY FAILED'}
+     input.remove();
+   }
+ });
+})();
+</script>
 </body></html>
