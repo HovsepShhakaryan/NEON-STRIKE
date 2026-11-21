@@ -45,6 +45,8 @@
 /* Installable web app UI */
 #installGame{display:none;pointer-events:auto;border:1px solid #71f3ff90;color:#e9ffff;background:linear-gradient(120deg,#104b65,#203f83);border-radius:13px;font-weight:900;padding:11px 18px;cursor:pointer;box-shadow:0 4px 22px #00aaff2b;letter-spacing:.8px}
 #installGame.visible{display:inline-flex;gap:8px;align-items:center;justify-content:center}
+#installGame.android-install{font-size:16px;min-height:54px;padding:15px 26px;color:#05172e;background:linear-gradient(110deg,#80efff,#49a5ff);box-shadow:0 0 28px #39bfff66;border-color:#d2fcff}
+#installGame:focus-visible,#portraitInstall:focus-visible{outline:3px solid #fff;outline-offset:3px}
 #installPanel{display:none;position:fixed;inset:0;z-index:2147483640;align-items:center;justify-content:center;background:#030916e8;pointer-events:auto;padding:18px;touch-action:pan-y}
 #installPanel.open{display:flex}
 #installPanel .installCard{max-width:420px;width:100%;background:linear-gradient(145deg,#132d47,#071320);border:1px solid #65e9ff76;border-radius:19px;padding:24px;color:#ecfaff;box-shadow:0 12px 60px #000a;text-align:left}
@@ -135,6 +137,9 @@
   #portraitBlock #landscapeLaunch.android-visible{display:block}
   #portraitBlock #portraitInstall{display:none;appearance:none;border:1px solid #75eeff9a;border-radius:14px;padding:15px 28px;background:linear-gradient(120deg,#48e1ed,#428bff);box-shadow:0 8px 25px #00b7ff3d;color:#041629;font:900 15px system-ui;letter-spacing:1px;min-height:50px;cursor:pointer;pointer-events:auto;touch-action:manipulation}
   #portraitBlock #portraitInstall.visible{display:block}
+  #portraitBlock #portraitInstall.android-install{display:block;width:min(100%,310px);font-size:17px;box-shadow:0 0 30px #20d8ff52,0 9px 25px #0007}
+  #portraitBlock #installAvailability{display:none;color:#a9d6ef;font-size:12px;line-height:1.4;max-width:300px}
+  #portraitBlock #installAvailability.visible{display:block}
   #portraitBlock .portraitTag{padding:9px 15px;border:1px solid #55d8ff77;border-radius:999px;background:#1045608a;color:#a9f6ff;font-size:12px;letter-spacing:1.3px;font-weight:800}
 }
 </style>
@@ -153,9 +158,10 @@
     </svg>
     <div class="portraitTitle">NEON <em>STRIKE</em></div>
     <div class="portraitTag">LANDSCAPE GAME</div>
-    <div class="portraitCaption" id="portraitCaption">Landscape mode is required. Android Chrome can switch on launch; on iPhone turn your phone sideways.</div>
+    <div class="portraitCaption" id="portraitCaption">Landscape-only gameplay. On iPhone, turn the device sideways to play; Safari cannot rotate the screen automatically.</div>
     <button id="landscapeLaunch" type="button" aria-label="Launch NEON STRIKE in landscape">▶ PLAY LANDSCAPE</button>
-    <button id="portraitInstall" type="button" aria-label="Install NEON STRIKE on Android">⬇ INSTALL GAME</button>
+    <button id="portraitInstall" type="button" aria-label="Install NEON STRIKE app on Android">⬇ INSTALL APP</button>
+    <div id="installAvailability" aria-live="polite"></div>
   </div>
 </div>
 <div id="gameShell">
@@ -383,33 +389,51 @@ const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingC
 </div></div>
 </div><!-- /gameShell -->
 <script>
-/* PWA install UX and offline support. This script intentionally does not touch game state. */
+/* Installable PWA: Android Chrome exposes beforeinstallprompt only when eligible.
+   Browsers cannot silently install; a user confirmation is always required. */
 (()=>{
  const install=document.getElementById('installGame');
  const portraitInstall=document.getElementById('portraitInstall');
+ const installAvailability=document.getElementById('installAvailability');
  const panel=document.getElementById('installPanel');
- // Keep the install dialog outside the landscape-only game shell.
  document.body.appendChild(panel);
  const close=()=>panel.classList.remove('open');
  const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
- const isApple=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ const isApple=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  const isAndroid=/Android/i.test(navigator.userAgent);
+ const isChromeAndroid=isAndroid && /Chrome\//.test(navigator.userAgent) && !/EdgA|OPR\/|SamsungBrowser|UCBrowser|FBAN|FBAV|Instagram|TikTok/i.test(navigator.userAgent);
  let deferred=null;
  function showHelp(){
    const heading=document.getElementById('installHelp');
    const steps=document.getElementById('installSteps');
-   const iOS=isApple;
-   heading.textContent=iOS?'On iPhone or iPad, install from Safari:':'On Android, use Chrome or another browser with app installation support:';
-   const list=iOS?['Open this GitHub Pages game link in Safari.','Tap the Share button (square with up arrow).','Select Add to Home Screen.','Turn on Open as Web App if shown, then tap Add.']:['Open this GitHub Pages game link in Chrome.','Open the browser menu (⋮).','Choose Install app or Add to Home screen.','Confirm installation and launch NEON STRIKE from your Home Screen.'];
+   heading.textContent=isApple?'Safari does not provide an automatic installation prompt:':isAndroid?'To install NEON STRIKE on your Android phone:':'Install NEON STRIKE from a supported browser:';
+   const list=isApple?['Open this game link in Safari.','Tap Share, then Add to Home Screen.','Select Open as Web App if offered and tap Add.']:isAndroid?['Open this link in Google Chrome.','Tap Chrome menu (⋮), then Install app or Add to Home screen.','Confirm installation. If no install option appears, Chrome may not consider the site installable yet.']:['Open the site in a browser with PWA installation support.','Choose Install app or Add to Home Screen from the browser menu.'];
    steps.replaceChildren(...list.map(t=>{const li=document.createElement('li');li.textContent=t;return li}));
    panel.classList.add('open');
  }
- function refreshInstall(){const show=!isStandalone();install.classList.toggle('visible',show);portraitInstall.classList.toggle('visible',show&&isAndroid);}
+ function refreshInstall(){
+   const show=!isStandalone();
+   install.classList.toggle('visible',show);
+   portraitInstall.classList.toggle('visible',show&&isAndroid);
+   install.classList.toggle('android-install',show&&isChromeAndroid);
+   portraitInstall.classList.toggle('android-install',show&&isChromeAndroid);
+   if(isAndroid && show){
+     installAvailability.classList.add('visible');
+     installAvailability.textContent=deferred?'Ready to install — tap INSTALL APP, then confirm in Chrome.':isChromeAndroid?'Tap INSTALL APP to install from Chrome, or follow the browser instructions.':'For one-tap installation prompts, open this link in Chrome.';
+   }
+ }
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;refreshInstall()});
  window.addEventListener('appinstalled',()=>{deferred=null;refreshInstall();close()});
  async function installApp(){
-   if(deferred){const prompt=deferred;deferred=null;try{await prompt.prompt();await prompt.userChoice}catch(e){showHelp()}refreshInstall()}
-   else showHelp();
+   if(deferred){
+     const prompt=deferred;deferred=null;
+     try{
+       await prompt.prompt();
+       const choice=await prompt.userChoice;
+       if(choice && choice.outcome==='dismissed') refreshInstall();
+     }catch(error){showHelp()}
+     refreshInstall();
+   }else showHelp();
  }
  install.addEventListener('click',installApp);
  portraitInstall.addEventListener('click',installApp);
@@ -429,7 +453,7 @@ const st=$('#stick'),kn=$('#knob');function moveStick(e){const b=st.getBoundingC
  const isPortrait=()=>matchMedia('(orientation:portrait)').matches;
  const launch=document.getElementById('landscapeLaunch');
  const caption=document.getElementById('portraitCaption');
- if(android){launch.classList.add('android-visible');caption.textContent='Tap PLAY LANDSCAPE to request full-screen landscape on Android, or install the game for landscape launch.';}
+ if(android){launch.classList.add('android-visible');caption.textContent='Tap PLAY LANDSCAPE to request full-screen landscape, or install the Android app to launch directly in landscape.';}
  async function lockLandscape(withFullscreen=false){
    if(!android || !screen.orientation?.lock)return false;
    if(withFullscreen && !document.fullscreenElement && document.documentElement.requestFullscreen){
