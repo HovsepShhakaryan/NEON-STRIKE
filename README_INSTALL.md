@@ -48,3 +48,13 @@ Update: Added a reactive neon background flash that changes color briefly whenev
 
 
 Automatic landscape layout: no rotate prompt. On portrait mobile browsers, the entire game is visually rotated into a landscape layout and controls remain usable. Browsers cannot physically rotate the device or always lock iOS screen orientation.
+
+## DASH fix
+DASH is reusable every 2.8 seconds. The button now shows a countdown, changes to DASH when ready, and supports repeat taps.
+
+
+## iPhone layout fix
+- Portrait iPhone screens now display an upright, playable game. No sidewise CSS rotation or rotate prompt.
+- Physical landscape remains landscape and fills the screen. iOS Safari cannot be forced to rotate a physical screen through the web page.
+- Use Safari > Share > Add to Home Screen for the standalone app.
+- The service worker cache name is bumped to v9; after deploying, close and reopen the installed app (or refresh in Safari) to load the new code.
