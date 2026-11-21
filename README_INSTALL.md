@@ -58,3 +58,7 @@ DASH is reusable every 2.8 seconds. The button now shows a countdown, changes to
 - Physical landscape remains landscape and fills the screen. iOS Safari cannot be forced to rotate a physical screen through the web page.
 - Use Safari > Share > Add to Home Screen for the standalone app.
 - The service worker cache name is bumped to v9; after deploying, close and reopen the installed app (or refresh in Safari) to load the new code.
+
+
+## Landscape only
+Portrait gameplay is blocked on touch devices. Rotate the phone to landscape to play. iOS Safari/PWA cannot force physical orientation; users must rotate their devices. Android installed PWAs request landscape via manifest. When the device becomes portrait during play, the game automatically pauses.
